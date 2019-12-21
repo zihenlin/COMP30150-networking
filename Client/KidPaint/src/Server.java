@@ -18,7 +18,7 @@ public class Server {
 	ArrayList<Client> list = new ArrayList<Client>();
 
 	public Server() throws IOException {
-		String msg = "roger that";
+		String msg = "6666";
 		DatagramSocket socket = new DatagramSocket(5555);
 		DatagramPacket packet;
 		DatagramPacket receivedPacket = new DatagramPacket(new byte[1024], 1024);
@@ -37,7 +37,12 @@ public class Server {
 						port);
 				System.out.println(receivedPacket.getAddress());
 				socket.send(packet);
+
 				Socket cSocket = srvSocket.accept();
+				while(cSocket == null){
+					cSocket = srvSocket.accept();
+				}
+				System.out.println(cSocket.getInetAddress().toString());
 				Client client = new Client();
 				client.name = content;
 				client.socket = cSocket;
