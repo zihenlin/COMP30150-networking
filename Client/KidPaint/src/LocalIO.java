@@ -4,26 +4,32 @@ import java.util.*;
 public class LocalIO{
     public static void main (String args[]){}
 
-    static void consoleToFile(String path) throws IOException{
+    static void consoleToFile(String path, int[][]data) throws IOException{
         DataOutputStream out = new DataOutputStream(new FileOutputStream(path));
-        Scanner scanner = new Scanner(System.in);
 
-        int n;
+        int[][] sketch = data;
 
-        while (true){
-            try{
-                n = scanner.nextInt();
-            }catch (InputMismatchException ex){
-                break;
+        for(int i = 0; i < sketch.length; i++){
+            for(int j = 0; j < sketch[i].length; j++){
+                out.writeInt(sketch[i][j]);
             }
-
-            out.writeInt(n);
         }
-        scanner.close();
+        out.flush();
+
+        // while (true){
+        //     try{
+        //         n = scanner.nextInt();
+        //     }catch (InputMismatchException ex){
+        //         break;
+        //     }
+
+        //     out.writeInt(n);
+        // }
+        // scanner.close();
         out.close();
     }
 
-    static void filetoConsole(String path) throws IOException{
+    static int[][] filetoConsole(String path) throws IOException{
         DataInputStream in  = new DataInputStream(new FileInputStream(path));
         
         int n; 
