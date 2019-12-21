@@ -40,6 +40,7 @@ public class UI extends JFrame {
 	private JPanel paintPanel;
 	private JToggleButton tglPen;
 	private JToggleButton tglBucket;
+	String username;
 	DataOutputStream out;
 
 	private static UI instance;
@@ -56,10 +57,15 @@ public class UI extends JFrame {
 	 * @throws IOException
 	 * @throws UnknownHostException
 	 */
-	public static UI getInstance() {
+	public static UI getInstance(String serverIP, int port,String name) throws UnknownHostException, IOException {
 		if (instance == null)
-			instance = new UI();
+			instance = new UI(serverIP,port,name);
 
+		return instance;
+	}
+
+	public static UI getInstance() {
+		
 		return instance;
 	}
 
@@ -71,9 +77,15 @@ public class UI extends JFrame {
 	 * @throws IOException
 	 * @throws UnknownHostException
 	 */
-	private UI(){
+	private UI(String serverIP, int port ,String name) throws UnknownHostException, IOException {
 		setTitle("KidPaint");
-		
+		username = name;
+		Socket socket = new Socket(serverIP, port);
+		out = new DataOutputStream(socket.getOutputStream());
+		Thread t = new Thread(() -> {
+			receiveData(socket);
+		});
+		t.start();
 		
 		JPanel basePanel = new JPanel();
 		getContentPane().add(basePanel, BorderLayout.CENTER);
@@ -252,30 +264,31 @@ public class UI extends JFrame {
 	 * @param text - user inputted text
 	 */
 	private void onTextInputted(String text) {
-		chatArea.setText(chatArea.getText() + text + "\n");
-		// try {
-		// 	out.writeInt(text.length());
-		// 	out.write(text.getBytes(), 0, text.length());
-		// } catch (IOException e) {
-		// 	chatArea.append("Unable to send message to the server!\n");
-		// }
+		//chatArea.setText(chatArea.getText() + text + "\n");
+		try {
+			text = username + ":" + text;
+			out.writeInt(text.length());
+			out.write(text.getBytes(), 0, text.length());
+		} catch (IOException e) {
+			chatArea.append("Unable to send message to the server!\n");
+		}
 	}
 
-	// private void receiveData(Socket socket) {
-	// 	try {
-	// 		byte[] buffer = new byte[1024];
-	// 		DataInputStream in = new DataInputStream(socket.getInputStream());
-	// 		while (true) {
-	// 			int len = in.readInt();
-	// 			in.read(buffer, 0, len);
-	// 			SwingUtilities.invokeLater(() -> {
-	// 				chatArea.append(new String(buffer, 0, len) + "\n");
-	// 			});
-	// 		}
-	// 	} catch (IOException e) {
-	// 		e.printStackTrace();
-	// 	}
-	// }
+	private void receiveData(Socket socket) {
+		try {
+			byte[] buffer = new byte[1024];
+			DataInputStream in = new DataInputStream(socket.getInputStream());
+			while (true) {
+				int len = in.readInt();
+				in.read(buffer, 0, len);
+				SwingUtilities.invokeLater(() -> {
+					chatArea.append(new String(buffer, 0, len) + "\n");
+				});
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * change the color of a specific pixel
