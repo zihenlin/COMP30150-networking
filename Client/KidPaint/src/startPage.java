@@ -1,11 +1,12 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.Socket;
 
 import javax.swing.*;
 
@@ -40,7 +41,7 @@ public class startPage extends JFrame {
 				try {
 					req(textField.getText());
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
+
 					e1.printStackTrace();
 				}
 			}
@@ -58,19 +59,26 @@ public class startPage extends JFrame {
 
 			socket.receive(receivedPacket);
 			String content = new String(receivedPacket.getData(), 0, receivedPacket.getLength());
-			if (content.equals("roger that")) {
+			if (content != null) {
 				server_ip = receivedPacket.getAddress().toString();
-				server_port = receivedPacket.getPort();
-				System.out.println(server_ip);
-				System.out.println(server_port);
+				server_port = Integer.parseInt(content);
+				System.out.println("server_ip: " + server_ip);
+				System.out.println("server_port: " + server_port);
+				socket.close();
 				this.setVisible(false);
 				UI ui = UI.getInstance();
 				ui.setData(new int[50][50], 20);
 				ui.setVisible(true);
 				end = true;
 			}
-
 		}
+		// Socket socket2 = new Socket(server_ip, server_port);
+		// out = new DataOutputStream(socket.getOutputStream());
+
+		// Thread t = new Thread(() -> {
+		// 	receiveData(socket);
+		// });
+		// t.start();
 	}
 
 }

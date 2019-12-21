@@ -13,6 +13,11 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.awt.FlowLayout;
@@ -37,6 +42,7 @@ public class UI extends JFrame {
 	private JToggleButton tglBucket;
 	private JToggleButton tglSave;
 	private JToggleButton tglImport;
+	DataOutputStream out;
 
 	private static UI instance;
 	private int selectedColor = -543230; // golden
@@ -49,6 +55,8 @@ public class UI extends JFrame {
 	 * get the instance of UI. Singleton design pattern.
 	 * 
 	 * @return
+	 * @throws IOException
+	 * @throws UnknownHostException
 	 */
 	public static UI getInstance() {
 		if (instance == null)
@@ -61,9 +69,8 @@ public class UI extends JFrame {
 	 * private constructor. To create an instance of UI, call UI.getInstance()
 	 * instead.
 	 */
-	private UI() {
+	private UI(){
 		setTitle("KidPaint");
-
 		JPanel basePanel = new JPanel();
 		getContentPane().add(basePanel, BorderLayout.CENTER);
 		basePanel.setLayout(new BorderLayout(0, 0));
@@ -312,8 +319,30 @@ public class UI extends JFrame {
 	 */
 	private void onTextInputted(String text) {
 		chatArea.setText(chatArea.getText() + text + "\n");
+		// try {
+		// 	out.writeInt(text.length());
+		// 	out.write(text.getBytes(), 0, text.length());
+		// } catch (IOException e) {
+		// 	chatArea.append("Unable to send message to the server!\n");
+		// }
 	}
 
+	// private void receiveData(Socket socket) {
+	// 	try {
+	// 		byte[] buffer = new byte[1024];
+	// 		DataInputStream in = new DataInputStream(socket.getInputStream());
+	// 		while (true) {
+	// 			int len = in.readInt();
+	// 			in.read(buffer, 0, len);
+	// 			SwingUtilities.invokeLater(() -> {
+	// 				chatArea.append(new String(buffer, 0, len) + "\n");
+	// 			});
+	// 		}
+	// 	} catch (IOException e) {
+	// 		e.printStackTrace();
+	// 	}
+	// }
+	
 	/**
 	 * change the color of a specific pixel
 	 * 
