@@ -45,7 +45,9 @@ public class UI extends JFrame {
 	private JToggleButton tglBucket;
 	private JToggleButton tglSave;
 	private JToggleButton tglImport;
-	private JFileChooser filechooser = new JFileChooser();;
+	private JToggleButton tglEraser;
+	private JFileChooser filechooser = new JFileChooser();
+	private boolean eraseMode = false;
 	String username;
 	DataOutputStream out;
 
@@ -237,6 +239,24 @@ public class UI extends JFrame {
 			}
 		});
 
+		tglEraser = new JToggleButton("Eraser");
+		toolPanel.add(tglEraser);
+		tglEraser.setSelected(false);
+
+
+		tglEraser.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(eraseMode){
+					tglEraser.setSelected(false);
+					eraseMode = false;
+				}else {
+					tglEraser.setSelected(true);
+					eraseMode = true;
+				}
+			}
+		});
+
 		tglSave = new JToggleButton("Save");
 		toolPanel.add(tglSave);
 		tglSave.setSelected(false);
@@ -379,7 +399,11 @@ public class UI extends JFrame {
 		if (col >= data.length || row >= data[0].length)
 			return;
 
-		data[col][row] = selectedColor;
+		if(!eraseMode) {
+			data[col][row] = selectedColor;
+		}else{
+			data[col][row] = 0;
+		}
 		paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
 	}
 
