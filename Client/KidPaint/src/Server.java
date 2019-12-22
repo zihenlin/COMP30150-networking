@@ -71,25 +71,28 @@ public class Server {
 		Socket clientSocket = client.socket;
 		byte[] buffer = new byte[1024];
 		int len;
+		int type;
 		System.out.printf("Established a connection to host %s:%d\n\n", clientSocket.getInetAddress(),
 				clientSocket.getPort());
 
 		DataInputStream in = new DataInputStream(clientSocket.getInputStream());
 		
 		while (true) {
+			type = in.readInt();
 			len = in.readInt();
 			in.read(buffer, 0, len);
-			forward(buffer, len, client.name);
+			forward(buffer, len, client.name,type);
 		}
 	}
 
-	private void forward(byte[] data, int len, String username) {
+	private void forward(byte[] data, int len, String username,int type) {
 		synchronized (list) {
 			for (int i = 0; i < list.size(); i++) {
 				try {
 					Client client = list.get(i);
 					Socket socket = client.socket;
 					DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+					out.writeInt(type);
 					out.writeInt(len);
 					out.write(data, 0, len);
 				} catch (IOException e) {

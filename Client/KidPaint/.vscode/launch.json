@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - KidPaint",
+            "request": "launch",
+            "mainClass": "KidPaint",
+            "projectName": "KidPaint"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Server",
+            "request": "launch",
+            "mainClass": "Server",
+            "projectName": "KidPaint"
+        }
+    ]
+}
