@@ -65,15 +65,15 @@ public class UI extends JFrame {
 	 * @throws IOException
 	 * @throws UnknownHostException
 	 */
-	public static UI getInstance(String serverIP, int port,String name) throws UnknownHostException, IOException {
+	public static UI getInstance(String serverIP, int port, String name) throws UnknownHostException, IOException {
 		if (instance == null)
-			instance = new UI(serverIP,port,name);
+			instance = new UI(serverIP, port, name);
 
 		return instance;
 	}
 
 	public static UI getInstance() {
-		
+
 		return instance;
 	}
 
@@ -81,7 +81,7 @@ public class UI extends JFrame {
 	 * private constructor. To create an instance of UI, call UI.getInstance()
 	 * instead.
 	 */
-	private UI(String serverIP, int port ,String name) throws UnknownHostException, IOException {
+	private UI(String serverIP, int port, String name) throws UnknownHostException, IOException {
 		setTitle("KidPaint");
 		username = name;
 		Socket socket = new Socket(serverIP, port);
@@ -90,7 +90,7 @@ public class UI extends JFrame {
 			receiveData(socket);
 		});
 		t.start();
-		
+
 		JPanel basePanel = new JPanel();
 		getContentPane().add(basePanel, BorderLayout.CENTER);
 		basePanel.setLayout(new BorderLayout(0, 0));
@@ -109,8 +109,8 @@ public class UI extends JFrame {
 						RenderingHints.VALUE_ANTIALIAS_ON);
 				g2.setRenderingHints(rh);
 
-// 				// clear         final Fille
-// the paint panel using black
+				// // clear final Fille
+				// the paint panel using black
 				g2.setColor(Color.black);
 				g2.fillRect(0, 0, this.getWidth(), this.getHeight());
 
@@ -147,7 +147,12 @@ public class UI extends JFrame {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0)
-					paintArea(e.getX() / blockSize, e.getY() / blockSize);
+					try {
+						paintArea(e.getX() / blockSize, e.getY() / blockSize);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 			}
 		});
 
@@ -156,7 +161,12 @@ public class UI extends JFrame {
 			@Override
 			public void mouseDragged(MouseEvent e) {
 				if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0)
-					paintPixel(e.getX() / blockSize, e.getY() / blockSize);
+					try {
+						paintPixel(e.getX() / blockSize, e.getY() / blockSize);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 			}
 
 			@Override
@@ -260,7 +270,6 @@ public class UI extends JFrame {
 		tglSave = new JToggleButton("Save");
 		toolPanel.add(tglSave);
 		tglSave.setSelected(false);
-	
 
 		tglSave.addActionListener(new ActionListener() {
 			@Override
@@ -268,10 +277,10 @@ public class UI extends JFrame {
 				System.out.println("Save button is pressed!");
 
 				int r = filechooser.showSaveDialog(null);
-				if(r == JFileChooser.APPROVE_OPTION){
-					try{
+				if (r == JFileChooser.APPROVE_OPTION) {
+					try {
 						LocalIO.consoleToFile(filechooser.getSelectedFile().getAbsolutePath(), data);
-					}catch(Exception e){
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				}
@@ -288,19 +297,16 @@ public class UI extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				int[][] temp;
 				int r = filechooser.showOpenDialog(null);
-				if(r == JFileChooser.APPROVE_OPTION){
-					try{
+				if (r == JFileChooser.APPROVE_OPTION) {
+					try {
 						temp = LocalIO.filetoConsole(filechooser.getSelectedFile().getAbsolutePath());
-					}catch(Exception e){
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				}
 				tglImport.setSelected(false);
 			}
 		});
-
-
-
 
 		JPanel msgPanel = new JPanel();
 
@@ -364,9 +370,10 @@ public class UI extends JFrame {
 	 * @param text - user inputted text
 	 */
 	private void onTextInputted(String text) {
-		//chatArea.setText(chatArea.getText() + text + "\n");
+		// chatArea.setText(chatArea.getText() + text + "\n");
 		try {
 			text = username + ":" + text;
+			out.writeInt(-1);
 			out.writeInt(text.length());
 			out.write(text.getBytes(), 0, text.length());
 		} catch (IOException e) {
@@ -379,23 +386,40 @@ public class UI extends JFrame {
 			byte[] buffer = new byte[1024];
 			DataInputStream in = new DataInputStream(socket.getInputStream());
 			while (true) {
+				int type = in.readInt();
 				int len = in.readInt();
 				in.read(buffer, 0, len);
-				SwingUtilities.invokeLater(() -> {
-					chatArea.append(new String(buffer, 0, len) + "\n");
-				});
+				String content = new String(buffer, 0, len);
+				System.out.println(content);
+				if (type == 0) {
+					String[] p = content.split(" ");
+					int col = Integer.parseInt(p[0]);
+					int row = Integer.parseInt(p[1]);
+					int color = Integer.parseInt(p[2]);
+					SwingUtilities.invokeLater(() -> {
+						data[col][row] = color;
+						paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
+					});
+				}
+				if (type == -1) {
+					SwingUtilities.invokeLater(() -> {
+						chatArea.append(content + "\n");
+
+					});
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * change the color of a specific pixel
 	 * 
 	 * @param col, row - the position of the selected pixel
+	 * @throws IOException
 	 */
-	public void paintPixel(int col, int row) {
+	public void paintPixel(int col, int row) throws IOException {
 		if (col >= data.length || row >= data[0].length)
 			return;
 
@@ -404,7 +428,13 @@ public class UI extends JFrame {
 		}else{
 			data[col][row] = 0;
 		}
-		paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
+
+		// data[col][row] = selectedColor;
+		out.writeInt(0);
+		String p = col + " " + row + " " + selectedColor;
+
+		out.writeInt(p.length());
+		out.write(p.getBytes(), 0, p.length());
 	}
 
 	/**
@@ -412,8 +442,9 @@ public class UI extends JFrame {
 	 * 
 	 * @param col, row - the position of the selected pixel
 	 * @return a list of modified pixels
+	 * @throws IOException
 	 */
-	public List paintArea(int col, int row) {
+	public List paintArea(int col, int row) throws IOException {
 		LinkedList<Point> filledPixels = new LinkedList<Point>();
 
 		if (col >= data.length || row >= data[0].length)
@@ -426,15 +457,19 @@ public class UI extends JFrame {
 			buffer.add(new Point(col, row));
 
 			while (!buffer.isEmpty()) {
-				Point p = buffer.removeFirst();
-				int x = p.x;
-				int y = p.y;
+				Point pt = buffer.removeFirst();
+				int x = pt.x;
+				int y = pt.y;
 
 				if (data[x][y] != oriColor)
 					continue;
 
 				data[x][y] = selectedColor;
-				filledPixels.add(p);
+				out.writeInt(0);
+				String p = x + " " + y + " " + selectedColor;
+				out.writeInt(p.length());
+				out.write(p.getBytes(), 0, p.length());
+				filledPixels.add(pt);
 
 				if (x > 0 && data[x - 1][y] == oriColor)
 					buffer.add(new Point(x - 1, y));
