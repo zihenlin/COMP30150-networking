@@ -1,3 +1,4 @@
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -21,6 +22,7 @@ import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import javax.swing.JScrollPane;
@@ -28,6 +30,7 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import java.awt.Color;
 import javax.swing.border.LineBorder;
+import javax.swing.filechooser.*;
 
 enum PaintMode {
 	Pixel, Area
@@ -42,6 +45,8 @@ public class UI extends JFrame {
 	private JToggleButton tglBucket;
 	private JToggleButton tglSave;
 	private JToggleButton tglImport;
+	private JFileChooser filechooser = new JFileChooser();;
+	String username;
 	DataOutputStream out;
 
 	private static UI instance;
@@ -58,10 +63,15 @@ public class UI extends JFrame {
 	 * @throws IOException
 	 * @throws UnknownHostException
 	 */
-	public static UI getInstance() {
+	public static UI getInstance(String serverIP, int port,String name) throws UnknownHostException, IOException {
 		if (instance == null)
-			instance = new UI();
+			instance = new UI(serverIP,port,name);
 
+		return instance;
+	}
+
+	public static UI getInstance() {
+		
 		return instance;
 	}
 
@@ -69,8 +79,16 @@ public class UI extends JFrame {
 	 * private constructor. To create an instance of UI, call UI.getInstance()
 	 * instead.
 	 */
-	private UI(){
+	private UI(String serverIP, int port ,String name) throws UnknownHostException, IOException {
 		setTitle("KidPaint");
+		username = name;
+		Socket socket = new Socket(serverIP, port);
+		out = new DataOutputStream(socket.getOutputStream());
+		Thread t = new Thread(() -> {
+			receiveData(socket);
+		});
+		t.start();
+		
 		JPanel basePanel = new JPanel();
 		getContentPane().add(basePanel, BorderLayout.CENTER);
 		basePanel.setLayout(new BorderLayout(0, 0));
@@ -89,7 +107,8 @@ public class UI extends JFrame {
 						RenderingHints.VALUE_ANTIALIAS_ON);
 				g2.setRenderingHints(rh);
 
-				// clear the paint panel using black
+// 				// clear         final Fille
+// the paint panel using black
 				g2.setColor(Color.black);
 				g2.fillRect(0, 0, this.getWidth(), this.getHeight());
 
@@ -122,7 +141,7 @@ public class UI extends JFrame {
 			public void mousePressed(MouseEvent e) {
 			}
 
-			// handle the mouse-up event of the paint panel
+			// handle the mouse-uthisp event of the paint panel
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0)
@@ -221,15 +240,20 @@ public class UI extends JFrame {
 		tglSave = new JToggleButton("Save");
 		toolPanel.add(tglSave);
 		tglSave.setSelected(false);
+	
 
-		// change the paint mode to PIXEL mode
 		tglSave.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				try{
-					LocalIO.consoleToFile("test.txt", data);
-				}catch(Exception e){
-					e.printStackTrace();
+				System.out.println("Save button is pressed!");
+
+				int r = filechooser.showSaveDialog(null);
+				if(r == JFileChooser.APPROVE_OPTION){
+					try{
+						LocalIO.consoleToFile(filechooser.getSelectedFile().getAbsolutePath(), data);
+					}catch(Exception e){
+						e.printStackTrace();
+					}
 				}
 				tglSave.setSelected(false);
 			}
@@ -239,15 +263,17 @@ public class UI extends JFrame {
 		toolPanel.add(tglImport);
 		tglImport.setSelected(false);
 
-		// change the paint mode to PIXEL mode
 		tglImport.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				int[][] temp;
-				try{
-					temp = LocalIO.filetoConsole("test.txt");
-				}catch(Exception e){
-					e.printStackTrace();
+				int r = filechooser.showOpenDialog(null);
+				if(r == JFileChooser.APPROVE_OPTION){
+					try{
+						temp = LocalIO.filetoConsole(filechooser.getSelectedFile().getAbsolutePath());
+					}catch(Exception e){
+						e.printStackTrace();
+					}
 				}
 				tglImport.setSelected(false);
 			}
@@ -318,30 +344,31 @@ public class UI extends JFrame {
 	 * @param text - user inputted text
 	 */
 	private void onTextInputted(String text) {
-		chatArea.setText(chatArea.getText() + text + "\n");
-		// try {
-		// 	out.writeInt(text.length());
-		// 	out.write(text.getBytes(), 0, text.length());
-		// } catch (IOException e) {
-		// 	chatArea.append("Unable to send message to the server!\n");
-		// }
+		//chatArea.setText(chatArea.getText() + text + "\n");
+		try {
+			text = username + ":" + text;
+			out.writeInt(text.length());
+			out.write(text.getBytes(), 0, text.length());
+		} catch (IOException e) {
+			chatArea.append("Unable to send message to the server!\n");
+		}
 	}
 
-	// private void receiveData(Socket socket) {
-	// 	try {
-	// 		byte[] buffer = new byte[1024];
-	// 		DataInputStream in = new DataInputStream(socket.getInputStream());
-	// 		while (true) {
-	// 			int len = in.readInt();
-	// 			in.read(buffer, 0, len);
-	// 			SwingUtilities.invokeLater(() -> {
-	// 				chatArea.append(new String(buffer, 0, len) + "\n");
-	// 			});
-	// 		}
-	// 	} catch (IOException e) {
-	// 		e.printStackTrace();
-	// 	}
-	// }
+	private void receiveData(Socket socket) {
+		try {
+			byte[] buffer = new byte[1024];
+			DataInputStream in = new DataInputStream(socket.getInputStream());
+			while (true) {
+				int len = in.readInt();
+				in.read(buffer, 0, len);
+				SwingUtilities.invokeLater(() -> {
+					chatArea.append(new String(buffer, 0, len) + "\n");
+				});
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * change the color of a specific pixel

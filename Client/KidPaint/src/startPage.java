@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 import javax.swing.*;
 
@@ -48,8 +49,8 @@ public class startPage extends JFrame {
 		});
 	}
 
-	void req(String username) throws IOException {
-		DatagramSocket socket = new DatagramSocket(1111);
+	void req(String username) throws UnknownHostException,IOException {
+		DatagramSocket socket = new DatagramSocket();
 		DatagramPacket packet = new DatagramPacket(username.getBytes(), username.length(),
 				InetAddress.getByName("255.255.255.255"), 5555);
 		socket.send(packet);
@@ -61,18 +62,18 @@ public class startPage extends JFrame {
 			String content = new String(receivedPacket.getData(), 0, receivedPacket.getLength());
 			if (content != null) {
 				server_ip = receivedPacket.getAddress().toString();
+				server_ip = server_ip.substring(1);
 				server_port = Integer.parseInt(content);
 				System.out.println("server_ip: " + server_ip);
 				System.out.println("server_port: " + server_port);
 				socket.close();
 				this.setVisible(false);
-				UI ui = UI.getInstance();
+				UI ui = UI.getInstance(server_ip, server_port,username);
 				ui.setData(new int[50][50], 20);
 				ui.setVisible(true);
 				end = true;
 			}
 		}
-		// Socket socket2 = new Socket(server_ip, server_port);
 		// out = new DataOutputStream(socket.getOutputStream());
 
 		// Thread t = new Thread(() -> {

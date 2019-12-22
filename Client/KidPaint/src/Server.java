@@ -36,13 +36,12 @@ public class Server {
 				packet = new DatagramPacket(msg.getBytes(), msg.length(), InetAddress.getByName("255.255.255.255"),
 						port);
 				System.out.println(receivedPacket.getAddress());
+				System.out.println(receivedPacket.getPort());
 				socket.send(packet);
 
 				Socket cSocket = srvSocket.accept();
-				while(cSocket == null){
-					cSocket = srvSocket.accept();
-				}
-				System.out.println("cSocket: " + cSocket.getInetAddress().toString());
+
+				System.out.println(cSocket.getInetAddress().toString());
 				Client client = new Client();
 				client.name = content;
 				client.socket = cSocket;
@@ -64,6 +63,7 @@ public class Server {
 				});
 				t.start();
 			}
+			System.out.println("11");
 		}
 	}
 

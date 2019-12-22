@@ -1,4 +1,5 @@
 import javax.imageio.ImageIO;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -15,10 +16,10 @@ import java.awt.Window.Type;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-public class ColorPicker extends JDialog {
+
+public class ColorPicker extends JDialog{ 
 	BufferedImage colorImage;
 	int selectedColor = 0;
-
 	private static ColorPicker instance;
 	
 	/**
@@ -52,7 +53,6 @@ public class ColorPicker extends JDialog {
 		};
 		
 		this.setContentPane(panel);
-		
 		try {
 			// load the color-spectrum image
 			colorImage = ImageIO.read(new File("color-spectrum.jpg"));
@@ -63,8 +63,7 @@ public class ColorPicker extends JDialog {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		
+				
 		this.getContentPane().addMouseListener(new MouseListener() {
 			@Override public void mouseClicked(MouseEvent e) {}
 			@Override public void mouseEntered(MouseEvent e) {}
@@ -82,6 +81,7 @@ public class ColorPicker extends JDialog {
 		
 		this.pack();
 	}
+
 
 
 }
