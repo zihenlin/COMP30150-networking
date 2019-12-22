@@ -260,10 +260,12 @@ public class UI extends JFrame {
 				if(eraseMode){
 					tglEraser.setSelected(false);
 					eraseMode = false;
+
 				}else {
 					tglEraser.setSelected(true);
 					eraseMode = true;
 				}
+				System.out.println(eraseMode);
 			}
 		});
 
@@ -423,15 +425,18 @@ public class UI extends JFrame {
 		if (col >= data.length || row >= data[0].length)
 			return;
 
-		if(!eraseMode) {
-			data[col][row] = selectedColor;
-		}else{
+
+		data[col][row] = selectedColor;
+
+		if(eraseMode){
 			data[col][row] = 0;
+		}else{
+			data[col][row] = selectedColor;
 		}
 
 		// data[col][row] = selectedColor;
 		out.writeInt(0);
-		String p = col + " " + row + " " + selectedColor;
+		String p = col + " " + row + " " + data[col][row];
 
 		out.writeInt(p.length());
 		out.write(p.getBytes(), 0, p.length());
@@ -465,8 +470,13 @@ public class UI extends JFrame {
 					continue;
 
 				data[x][y] = selectedColor;
+				if(eraseMode){
+					data[x][y]  = 0;
+				}else{
+					data[x][y] = selectedColor;
+				}
 				out.writeInt(0);
-				String p = x + " " + y + " " + selectedColor;
+				String p = x + " " + y + " " + data[x][y];
 				out.writeInt(p.length());
 				out.write(p.getBytes(), 0, p.length());
 				filledPixels.add(pt);
@@ -480,7 +490,7 @@ public class UI extends JFrame {
 				if (y < data[0].length - 1 && data[x][y + 1] == oriColor)
 					buffer.add(new Point(x, y + 1));
 			}
-			paintPanel.repaint();
+//			paintPanel.repaint();
 		}
 		return filledPixels;
 	}
