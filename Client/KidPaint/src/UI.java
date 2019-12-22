@@ -476,14 +476,14 @@ public class UI extends JFrame {
 				if (data[x][y] != oriColor)
 					continue;
 
-				if(eraseMode){
-					System.out.println("Im in bucket erase mode.");
-					data[x][y] = 0;
-				}else{
-					data[x][y] = selectedColor;
-				}
+				data[x][y] = selectedColor;
 				out.writeInt(0);
-				String p = x + " " + y + " " + data[x][y];
+				String p;
+				if(eraseMode){
+					p = x + " " + y + " " + 0;
+				}else{
+					p = x + " " + y + " " + data[x][y];
+				}
 				out.writeInt(p.length());
 				out.write(p.getBytes(), 0, p.length());
 				filledPixels.add(pt);
@@ -497,7 +497,6 @@ public class UI extends JFrame {
 				if (y < data[0].length - 1 && data[x][y + 1] == oriColor)
 					buffer.add(new Point(x, y + 1));
 			}
-			paintPanel.repaint();
 		}
 		return filledPixels;
 	}
