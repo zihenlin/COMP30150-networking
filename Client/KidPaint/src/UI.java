@@ -302,6 +302,14 @@ public class UI extends JFrame {
 				if (r == JFileChooser.APPROVE_OPTION) {
 					try {
 						temp = LocalIO.filetoConsole(filechooser.getSelectedFile().getAbsolutePath());
+						for(int i = 0; i < LocalIO.row; i++){
+							for(int j = 0; j < LocalIO.col; j++){
+								out.writeInt(0);
+								String p = i + " " + j + " " + temp[i][j];
+								out.writeInt(p.length());
+								out.write(p.getBytes(), 0, p.length());
+							}
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -434,7 +442,6 @@ public class UI extends JFrame {
 			data[col][row] = selectedColor;
 		}
 
-		// data[col][row] = selectedColor;
 		out.writeInt(0);
 		String p = col + " " + row + " " + data[col][row];
 
@@ -469,9 +476,9 @@ public class UI extends JFrame {
 				if (data[x][y] != oriColor)
 					continue;
 
-				data[x][y] = selectedColor;
 				if(eraseMode){
-					data[x][y]  = 0;
+					System.out.println("Im in bucket erase mode.");
+					data[x][y] = 0;
 				}else{
 					data[x][y] = selectedColor;
 				}
@@ -490,7 +497,7 @@ public class UI extends JFrame {
 				if (y < data[0].length - 1 && data[x][y + 1] == oriColor)
 					buffer.add(new Point(x, y + 1));
 			}
-//			paintPanel.repaint();
+			paintPanel.repaint();
 		}
 		return filledPixels;
 	}
