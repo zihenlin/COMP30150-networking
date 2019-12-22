@@ -76,12 +76,7 @@ public class startPage extends JFrame {
 				end = true;
 			}
 		}
-		// out = new DataOutputStream(socket.getOutputStream());
-
-		// Thread t = new Thread(() -> {
-		// receiveData(socket);
-		// });
-		// t.start();
+		
 	}
 
 }

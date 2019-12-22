@@ -8,9 +8,6 @@ public class KidPaint {
 		File f = new File(".");
 		String absolutePath = f.getAbsolutePath();
 		System.out.println(absolutePath);
-
-		// UI ui = UI.getInstance();
-		// ui.setData(new int[50][50], 20);
-		// ui.setVisible(true);
+		
 	}
 }
