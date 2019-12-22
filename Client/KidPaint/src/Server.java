@@ -16,6 +16,7 @@ class Client {
 public class Server {
 	ServerSocket srvSocket;
 	ArrayList<Client> list = new ArrayList<Client>();
+	int[][] data = new int[50][50];
 
 	public Server() throws IOException {
 		String msg = "6666";
@@ -59,6 +60,13 @@ public class Server {
 					}
 					synchronized (list) {
 						list.remove(client);
+						if (list.size() == 0) {
+							for (int i = 0; i < data.length; i++) {
+								for (int j = 0; j < data[0].length; j++) {
+									data[i][j] = 0;
+								}
+							}
+						}
 					}
 				});
 				t.start();
@@ -76,16 +84,36 @@ public class Server {
 				clientSocket.getPort());
 
 		DataInputStream in = new DataInputStream(clientSocket.getInputStream());
-		
+		DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+		if (list.size() > 1) {
+			for (int i = 0; i < data.length; i++) {
+				for (int j = 0; j < data[0].length; j++) {
+					out.writeInt(0);
+					String p = i + " " + j + " " + data[i][j];
+					out.writeInt(p.length());
+					out.write(p.getBytes(), 0, p.length());
+				}
+			}
+		}
 		while (true) {
 			type = in.readInt();
 			len = in.readInt();
 			in.read(buffer, 0, len);
-			forward(buffer, len, client.name,type);
+			if (type == 0) {
+				String content = new String(buffer, 0, len);
+				String[] p = content.split(" ");
+				int col = Integer.parseInt(p[0]);
+				int row = Integer.parseInt(p[1]);
+				int color = Integer.parseInt(p[2]);
+				data[col][row] = color;
+
+			}
+
+			forward(buffer, len, client.name, type);
 		}
 	}
 
-	private void forward(byte[] data, int len, String username,int type) {
+	private void forward(byte[] data, int len, String username, int type) {
 		synchronized (list) {
 			for (int i = 0; i < list.size(); i++) {
 				try {
