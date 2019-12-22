@@ -2,6 +2,8 @@ import java.io.*;
 import java.util.*;
 
 public class LocalIO{
+    static int row;
+    static int col;
     public static void main (String args[]){}
 
     static void consoleToFile(String path, int[][]data) throws IOException{
@@ -23,8 +25,8 @@ public class LocalIO{
     static int[][] filetoConsole(String path) throws IOException{
         DataInputStream in  = new DataInputStream(new FileInputStream(path));
         
-        int row = in.readInt();
-        int col = in.readInt();
+        row = in.readInt();
+        col = in.readInt();
 
         int[][] sketch = new int[row][col];
         for(int i = 0; i < sketch.length; i++){

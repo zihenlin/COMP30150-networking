@@ -45,7 +45,9 @@ public class UI extends JFrame {
 	private JToggleButton tglBucket;
 	private JToggleButton tglSave;
 	private JToggleButton tglImport;
-	private JFileChooser filechooser = new JFileChooser();;
+	private JToggleButton tglEraser;
+	private JFileChooser filechooser = new JFileChooser();
+	private boolean eraseMode = false;
 	String username;
 	DataOutputStream out;
 
@@ -247,6 +249,26 @@ public class UI extends JFrame {
 			}
 		});
 
+		tglEraser = new JToggleButton("Eraser");
+		toolPanel.add(tglEraser);
+		tglEraser.setSelected(false);
+
+
+		tglEraser.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(eraseMode){
+					tglEraser.setSelected(false);
+					eraseMode = false;
+
+				}else {
+					tglEraser.setSelected(true);
+					eraseMode = true;
+				}
+				System.out.println(eraseMode);
+			}
+		});
+
 		tglSave = new JToggleButton("Save");
 		toolPanel.add(tglSave);
 		tglSave.setSelected(false);
@@ -280,6 +302,14 @@ public class UI extends JFrame {
 				if (r == JFileChooser.APPROVE_OPTION) {
 					try {
 						temp = LocalIO.filetoConsole(filechooser.getSelectedFile().getAbsolutePath());
+						for(int i = 0; i < LocalIO.row; i++){
+							for(int j = 0; j < LocalIO.col; j++){
+								out.writeInt(0);
+								String p = i + " " + j + " " + temp[i][j];
+								out.writeInt(p.length());
+								out.write(p.getBytes(), 0, p.length());
+							}
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -403,13 +433,20 @@ public class UI extends JFrame {
 		if (col >= data.length || row >= data[0].length)
 			return;
 
-		// data[col][row] = selectedColor;
+
+		data[col][row] = selectedColor;
+
+		if(eraseMode){
+			data[col][row] = 0;
+		}else{
+			data[col][row] = selectedColor;
+		}
+
 		out.writeInt(0);
-		String p = col + " " + row + " " + selectedColor;
+		String p = col + " " + row + " " + data[col][row];
 
 		out.writeInt(p.length());
 		out.write(p.getBytes(), 0, p.length());
-		// paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
 	}
 
 	/**
@@ -439,9 +476,14 @@ public class UI extends JFrame {
 				if (data[x][y] != oriColor)
 					continue;
 
-				data[x][y] = selectedColor;
+				if(eraseMode){
+					System.out.println("Im in bucket erase mode.");
+					data[x][y] = 0;
+				}else{
+					data[x][y] = selectedColor;
+				}
 				out.writeInt(0);
-				String p = x + " " + y + " " + selectedColor;
+				String p = x + " " + y + " " + data[x][y];
 				out.writeInt(p.length());
 				out.write(p.getBytes(), 0, p.length());
 				filledPixels.add(pt);
