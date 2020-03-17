@@ -253,15 +253,14 @@ public class UI extends JFrame {
 		toolPanel.add(tglEraser);
 		tglEraser.setSelected(false);
 
-
 		tglEraser.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(eraseMode){
+				if (eraseMode) {
 					tglEraser.setSelected(false);
 					eraseMode = false;
 
-				}else {
+				} else {
 					tglEraser.setSelected(true);
 					eraseMode = true;
 				}
@@ -302,8 +301,8 @@ public class UI extends JFrame {
 				if (r == JFileChooser.APPROVE_OPTION) {
 					try {
 						temp = LocalIO.filetoConsole(filechooser.getSelectedFile().getAbsolutePath());
-						for(int i = 0; i < LocalIO.row; i++){
-							for(int j = 0; j < LocalIO.col; j++){
+						for (int i = 0; i < LocalIO.row; i++) {
+							for (int j = 0; j < LocalIO.col; j++) {
 								out.writeInt(0);
 								String p = i + " " + j + " " + temp[i][j];
 								out.writeInt(p.length());
@@ -400,7 +399,7 @@ public class UI extends JFrame {
 				int len = in.readInt();
 				in.read(buffer, 0, len);
 				String content = new String(buffer, 0, len);
-				System.out.println(content);
+
 				if (type == 0) {
 					String[] p = content.split(" ");
 					int col = Integer.parseInt(p[0]);
@@ -433,12 +432,11 @@ public class UI extends JFrame {
 		if (col >= data.length || row >= data[0].length)
 			return;
 
-
 		data[col][row] = selectedColor;
 
-		if(eraseMode){
+		if (eraseMode) {
 			data[col][row] = 0;
-		}else{
+		} else {
 			data[col][row] = selectedColor;
 		}
 
@@ -465,7 +463,14 @@ public class UI extends JFrame {
 		int oriColor = data[col][row];
 		LinkedList<Point> buffer = new LinkedList<Point>();
 
-		if (oriColor != selectedColor) {
+		int temp = selectedColor;
+
+		if (eraseMode) {
+			System.out.println("Im in bucket erase mode.");
+			temp = 0;
+		}
+
+		if (oriColor != temp) {
 			buffer.add(new Point(col, row));
 
 			while (!buffer.isEmpty()) {
@@ -476,14 +481,21 @@ public class UI extends JFrame {
 				if (data[x][y] != oriColor)
 					continue;
 
-				data[x][y] = selectedColor;
+//<<<<<<< HEAD
+//				data[x][y] = selectedColor;
+//				out.writeInt(0);
+//				String p;
+//				if(eraseMode){
+//					p = x + " " + y + " " + 0;
+//				}else{
+//					p = x + " " + y + " " + data[x][y];
+//				}
+//=======
+				data[x][y] = temp;
+
 				out.writeInt(0);
-				String p;
-				if(eraseMode){
-					p = x + " " + y + " " + 0;
-				}else{
-					p = x + " " + y + " " + data[x][y];
-				}
+				String p = x + " " + y + " " + data[x][y];
+//>>>>>>> 261918c0c8b63f73c37ee28916747fc7ac2e71e3
 				out.writeInt(p.length());
 				out.write(p.getBytes(), 0, p.length());
 				filledPixels.add(pt);
